@@ -10,6 +10,7 @@ class TrainingSetup(nn.Module):
         super(TrainingSetup, self).__init__()
         self.base_model = base_model
         self.dataset = CustomDataset("data.csv", transform=self.base_model.transform)
+        self.epochs = 100
 
     def kfold_training(self, kf):
         for fold, (train_idx, val_idx) in enumerate(kf.split(self.dataset)):
@@ -19,23 +20,22 @@ class TrainingSetup(nn.Module):
             train_loader = DataLoader(train_data, batch_size=self.base_model.batch_size, shuffle=True)
             val_loader = DataLoader(val_data, batch_size=self.base_model.batch_size)
 
-            optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-6)
+            optimizer = torch.optim.SGD(self.base_model.parameters(), lr=self.base_model.learning_rate, momentum=0.9, weight_decay=1e-6)
             criterion = nn.CosineEmbeddingLoss()
 
-            for epoch in range(num_epochs):
-                model.train()
+            for epoch in range(self.epochs):
+                self.base_model.train()
                 # Training loop here
                 for batch in train_loader:
-                    # Implement your training logic
-                    pass
+                    self.
 
                 # Validation loop here
-                model.eval()
+                self.base_model.eval()
                 with torch.no_grad():
                     # Implement your validation logic
                     pass
 
             # Save the trained model
             model_path = f"fold-{fold}.pth"
-            torch.save(model.state_dict(), model_path)
+            torch.save(self.base_model.state_dict(), model_path)
             print(f"Saved model for fold {fold} as {model_path}")
