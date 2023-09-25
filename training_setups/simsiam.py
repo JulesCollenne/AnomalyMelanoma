@@ -1,4 +1,5 @@
 import torch.nn as nn
+from torchvision.transforms import transforms
 
 from training_setups.training_setup import TrainingSetup
 
@@ -48,6 +49,19 @@ class SimSiam(TrainingSetup):
                                        nn.BatchNorm1d(pred_dim),
                                        nn.ReLU(inplace=True),  # hidden layer
                                        nn.Linear(pred_dim, dim))  # output layer
+
+        self.augmentation = [
+            transforms.RandomResizedCrop(224, scale=(0.2, 1.)),
+            transforms.RandomApply([
+                transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
+            ], p=0.8),
+            transforms.RandomGrayscale(p=0.2),
+            transforms.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            normalize
+        ]
+
 
     def forward(self, x1, x2):
         """
