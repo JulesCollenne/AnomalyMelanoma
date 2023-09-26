@@ -50,6 +50,9 @@ class SimSiam(TrainingSetup):
                                        nn.ReLU(inplace=True),  # hidden layer
                                        nn.Linear(pred_dim, dim))  # output layer
 
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                         std=[0.229, 0.224, 0.225])
+
         self.augmentation = [
             transforms.RandomResizedCrop(224, scale=(0.2, 1.)),
             transforms.RandomApply([
