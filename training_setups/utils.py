@@ -1,9 +1,12 @@
 import datetime
 import shutil
 
+import numpy as np
 import torch
-from PIL import ImageFilter
+from PIL import ImageFilter, Image
 import random
+
+from torch.utils.data import Dataset
 
 
 def save_checkpoint(state, is_best, filename, UA):
@@ -27,6 +30,35 @@ class TwoCropsTransform:
         return [q, k]
 
 
+class CustomImageDataset(Dataset):
+    def __init__(self, df, transform=None, target_transform=None, dataset_path="./dataset/", feature_extraction=False,
+                 get_names=False):
+        self.df = df
+        self.transform = transform
+        self.target_transform = target_transform
+        self.dataset_path = dataset_path
+        self.feature_extraction = feature_extraction
+        self.get_names = get_names
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        image = Image.open(self.dataset_path + self.df['image_name'].iloc[idx] + ".jpg")
+        labels = self.df['target'].iloc[idx]
+        names = self.df['image_name'].iloc[idx]
+        label = torch.tensor(np.asarray(labels))
+        if self.transform:
+            image = self.transform(image)
+        if self.target_transform:
+            label = self.target_transform(label)
+        if self.feature_extraction:
+            return image, names
+        if self.get_names:
+            return image, label, names
+        return image, label
+
+
 class GaussianBlur(object):
     """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709"""
 
@@ -39,6 +71,7 @@ class GaussianBlur(object):
         sigma = random.uniform(self.sigma[0], self.sigma[1])
         x = x.filter(ImageFilter.GaussianBlur(radius=sigma))
         return x
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""

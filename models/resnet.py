@@ -82,7 +82,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, depth, num_classes=1000, zero_init_residual=False, maxpool=True):
+    def __init__(self, depth=50, num_classes=1000, zero_init_residual=False, maxpool=True):
         super().__init__()
 
         self.name = "ResNet"

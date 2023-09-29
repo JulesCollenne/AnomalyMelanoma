@@ -17,8 +17,9 @@ class TrainingSetup(nn.Module):
         super(TrainingSetup, self).__init__()
         self.base_model = base_model
         self.dataset = CustomDataset("/media/jules/Transcend/Datasets/isic/ISIC_2020/GroundTruth.csv",
-                                     transform=self.base_model.transform)
+                                     transform=None)
         self.epochs = 100
+        self.batch_size = 16
         self.current_epoch = 0
         self.distributed = True
         self.gpu = 0
@@ -36,22 +37,25 @@ class TrainingSetup(nn.Module):
 
     def kfold_training(self, kf):
         for fold, (train_idx, val_idx) in enumerate(kf.split(self.dataset)):
+            print(f"Training fold {fold+1}...")
             train_data = torch.utils.data.Subset(self.dataset, train_idx)
             val_data = torch.utils.data.Subset(self.dataset, val_idx)
 
-            train_loader = DataLoader(train_data, batch_size=self.base_model.batch_size, shuffle=True)
-            val_loader = DataLoader(val_data, batch_size=self.base_model.batch_size)
+            train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=True)
+            val_loader = DataLoader(val_data, batch_size=self.batch_size)
 
-            self.optimizer = torch.optim.SGD(self.base_model.parameters(), lr=self.base_model.learning_rate,
+            self.optimizer = torch.optim.SGD(self.encoder.parameters(), lr=self.init_lr,
                                              momentum=0.9, weight_decay=1e-6)
             criterion = nn.CosineEmbeddingLoss()
             losses = []
             old_loss = 999.
 
             if self.distributed:
-                train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+                self.train_sampler = torch.utils.data.distributed.DistributedSampler(self.train_dataset)
             else:
-                train_sampler = None
+                self.train_sampler = None
+
+            exit()
 
             for epoch in range(self.epochs):
                 self.current_epoch = epoch

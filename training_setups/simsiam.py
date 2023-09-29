@@ -2,7 +2,7 @@ import torch.nn as nn
 from torchvision.transforms import transforms
 
 from training_setups.training_setup import TrainingSetup
-from training_setups.utils import GaussianBlur
+from training_setups.utils import GaussianBlur, CustomImageDataset, TwoCropsTransform
 
 
 class SimSiam(TrainingSetup):
@@ -66,6 +66,9 @@ class SimSiam(TrainingSetup):
             transforms.ToTensor(),
             normalize
         ]
+
+        self.train_dataset = CustomImageDataset(df, dataset_path=dataset_path,
+                                                transform=TwoCropsTransform(transforms.Compose(augmentation)))
 
     def forward(self, x1, x2):
         """
