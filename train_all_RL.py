@@ -1,8 +1,5 @@
-import torch
 from sklearn.model_selection import KFold
-from torch.utils.data import DataLoader
 
-from dataset import CustomDataset
 from models import *
 from training_setups import *
 
@@ -16,10 +13,13 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     kf = KFold(n_splits=5, shuffle=True, random_state=42)
 
+    print("Running k-fold trainings...")
     for model in models:
+        print(f"Model: {model.name}")
         for training_setup in training_setups:
+            print(f"Training setup: {training_setup.name}")
             training_setup = training_setup(model)
-            training_setup.kfold_train(kf)
+            training_setup.kfold_training(kf)
 
 
 if __name__ == "__main__":

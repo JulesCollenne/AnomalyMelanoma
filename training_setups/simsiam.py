@@ -2,6 +2,7 @@ import torch.nn as nn
 from torchvision.transforms import transforms
 
 from training_setups.training_setup import TrainingSetup
+from training_setups.utils import GaussianBlur
 
 
 class SimSiam(TrainingSetup):
@@ -15,6 +16,7 @@ class SimSiam(TrainingSetup):
         pred_dim: hidden dimension of the predictor (default: 512)
         """
         super(SimSiam, self).__init__(base_encoder)
+        self.name = "SimSiam"
 
         # create the encoder
         # num_classes is the output fc dimension, zero-initialize last BNs
@@ -35,13 +37,13 @@ class SimSiam(TrainingSetup):
         else:
             prev_dim = self.encoder.classifier[-1].weight.shape[1]
             self.encoder.classifier[-1] = nn.Sequential(nn.Linear(prev_dim, prev_dim, bias=False),
-                                            nn.BatchNorm1d(prev_dim),
-                                            nn.ReLU(inplace=True),  # first layer
-                                            nn.Linear(prev_dim, prev_dim, bias=False),
-                                            nn.BatchNorm1d(prev_dim),
-                                            nn.ReLU(inplace=True),  # second layer
-                                            self.encoder.classifier[-1],
-                                            nn.BatchNorm1d(dim, affine=False))  # output layer
+                                                        nn.BatchNorm1d(prev_dim),
+                                                        nn.ReLU(inplace=True),  # first layer
+                                                        nn.Linear(prev_dim, prev_dim, bias=False),
+                                                        nn.BatchNorm1d(prev_dim),
+                                                        nn.ReLU(inplace=True),  # second layer
+                                                        self.encoder.classifier[-1],
+                                                        nn.BatchNorm1d(dim, affine=False))  # output layer
             self.encoder.classifier[-1][6].bias.requires_grad = False  # hack: not use bias as it is followed by BN
 
         # build a 2-layer predictor
@@ -64,7 +66,6 @@ class SimSiam(TrainingSetup):
             transforms.ToTensor(),
             normalize
         ]
-
 
     def forward(self, x1, x2):
         """
