@@ -25,7 +25,6 @@ class TrainingSetup(nn.Module):
 
             for epoch in range(self.epochs):
                 self.base_model.train()
-                # Training loop here
                 for batch in train_loader:
                     self.
 
